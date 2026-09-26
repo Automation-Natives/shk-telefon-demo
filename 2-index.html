@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muster Haustechnik - Anruf-Assistent (Demo)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #0e1420; color: #eef2f7; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px; }
+  .card { background: #16202f; border: 1px solid #26334a; border-radius: 16px; max-width: 520px; width: 100%; padding: 32px 28px; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+  h1 { font-size: 1.35rem; margin-bottom: 4px; }
+  .sub { color: #9fb0c6; font-size: .92rem; margin-bottom: 24px; line-height: 1.5; }
+  .badge { display: inline-block; background: #233656; color: #8fc1ff; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 4px 10px; margin-bottom: 14px; }
+  #callBtn { width: 100%; border: 0; border-radius: 12px; padding: 16px; font-size: 1.05rem; font-weight: 700; cursor: pointer; background: #2f9e5f; color: #fff; transition: background .2s; }
+  #callBtn.live { background: #d0453e; }
+  #callBtn:disabled { background: #3a4a61; cursor: wait; }
+  #status { text-align: center; margin-top: 14px; font-size: .9rem; color: #9fb0c6; min-height: 1.3em; }
+  .tips { margin-top: 26px; border-top: 1px solid #26334a; padding-top: 18px; }
+  .tips h2 { font-size: .85rem; color: #9fb0c6; margin-bottom: 10px; font-weight: 600; }
+  .tips li { font-size: .88rem; margin: 6px 0 6px 18px; color: #c7d3e2; line-height: 1.45; }
+  .foot { margin-top: 22px; font-size: .75rem; color: #62718a; text-align: center; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="badge">Live-Demo</span>
+  <h1>Muster Haustechnik - Anruf-Assistent</h1>
+  <p class="sub">So klingt der KI-Telefonassistent, wenn im Buero niemand erreichbar ist: Er nimmt das Anliegen strukturiert auf, erkennt Notfaelle und sichert den Rueckruf zu.</p>
+  <button id="callBtn">Anruf starten</button>
+  <div id="status">Mikrofon wird beim Start abgefragt.</div>
+  <div class="tips">
+    <h2>Zum Ausprobieren im Gespraech:</h2>
+    <ul>
+      <li><strong>Standardfall:</strong> &bdquo;Mein Wasserhahn in der Kueche tropft.&ldquo;</li>
+      <li><strong>Notfall:</strong> &bdquo;Bei mir ist ein Rohr geplatzt, der Keller laeuft voll!&ldquo;</li>
+      <li><strong>Anfrage:</strong> &bdquo;Ich moechte ein Angebot fuer eine neue Heizung.&ldquo;</li>
+    </ul>
+  </div>
+  <p class="foot">Demonstration mit einem fiktiven Musterbetrieb. Es entstehen keine echten Auftraege; Angaben werden nicht an einen Betrieb uebermittelt.</p>
+</div>
+<script type="module">
+import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.7.1/+esm';
+const vapi = new Vapi('2eb659a3-5102-4819-8aae-7d94dac57383');
+const ASSISTANT_ID = '081c2ae3-3567-4c25-960b-f7806270ae1e';
+const btn = document.getElementById('callBtn');
+const statusEl = document.getElementById('status');
+let live = false;
+vapi.on('call-start', () => { live = true; btn.classList.add('live'); btn.textContent = 'Anruf beenden'; statusEl.textContent = 'Verbunden - sprechen Sie einfach los.'; });
+vapi.on('call-end', () => { live = false; btn.classList.remove('live'); btn.textContent = 'Anruf starten'; btn.disabled = false; statusEl.textContent = 'Anruf beendet.'; });
+vapi.on('error', (e) => { statusEl.textContent = 'Fehler: ' + (e && e.message ? e.message : 'Verbindung fehlgeschlagen'); btn.disabled = false; });
+btn.addEventListener('click', () => {
+  if (live) { vapi.stop(); return; }
+  btn.disabled = true; statusEl.textContent = 'Verbinde ...';
+  vapi.start(ASSISTANT_ID).catch(() => { btn.disabled = false; });
+});
+</script>
+</body>
+</html>
